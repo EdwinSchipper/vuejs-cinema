@@ -19,10 +19,10 @@
         <h1>Vue.js Cinema</h1>
     </div>
     <div id="overview">
-        <div id="main">
+        <div class="main">
             <!-- Custom Vue Components -->
-            <movie-list></movie-list>
-            <movie-filter></movie-filter>
+            <movie-list v-bind:genre="genre" v-bind:time="time"></movie-list>
+            <movie-filter v-on:check-filter="checkFilter"></movie-filter>
             <!-- // Custom Vue Components -->
         </div>
     </div>
