@@ -1,6 +1,7 @@
 import './style.scss';
 import Vue from 'vue';
 import genres from './util/genres';
+import { relativeTimeThreshold } from 'moment';
 
 
 new Vue({
@@ -32,18 +33,39 @@ new Vue({
     components: {
         'movie-list': {
             template: `<div id="movie-list">
-                            <div v-for="movie in movies" class="movie"> {{ movie.title }} </div>
+                            <div v-for="movie in filteredMovies" class="movie"> {{ movie.title }} </div>
                         </div>`,
             data() {
                 return {
                     movies: [
-                        { title: 'Pulp Fiction' },
-                        { title: 'Home Alone' },
-                        { title: 'Asutin Powers' }
+                        { title: 'Pulp Fiction', genre: genres.CRIME },
+                        { title: 'Home Alone', genre: genres.COMEDY },
+                        { title: 'Asutin Powers', genre: genres.COMEDY }
                     ]
                 }
             },
-            props: ['genre', 'time']
+            props: ['genre', 'time'],
+            methods: {
+                moviePassesGenreFilter(movie) {
+                    console.log('..............movie........................................');
+                    console.log(movie.genre);
+                    console.log(movie.title);
+                    if(!this.genre.length){
+                        return true;
+                    } else {
+                        console.log('movie.genre:');
+                        console.log(movie.genre);
+                        console.log(this.genre);
+                        return this.genre.find(genre => movie.genre === genre );
+                    }
+                    
+                }
+            },
+            computed: {
+                filteredMovies() {
+                    return this.movies.filter(this.moviePassesGenreFilter);
+                }
+            }
         },
 
         'movie-filter': {
