@@ -1,39 +1,81 @@
 <template>
     <div id="movie-list">
-        <div v-for="movie in filteredMovies" class="movie"> {{ movie.title }} </div>
+        
+        <!-- Check if filteredMovies has value -->
+        <div v-if="filteredMovies.length">
+            <!-- Select template element (MovieItem from component) -->
+            <movie-item v-for="movie in filteredMovies"
+                        v-bind:movie="movie.movie" 
+                        v-bind:sessions="movie.sessions"
+                        v-bind:day="day"
+                        v-bind:time="time"
+            ></movie-item>    
+        </div>
+
+        <!-- Check no results -->
+        <div v-else-if="movies.length" class="no-results">
+            {{ noResults }}
+        </div>
+
+        <!-- Fallback message, loading document before calculate above conditions etc. -->
+        <div v-else class="no-results">
+            Loading ...
+        </div>
     </div>
 </template>
 
+
 <script>
     // Import genres object
-    import genres from '../util/genres';
+    import genres from '../util/genres'; 
+    import times from '../util/times';
+    import MovieItem from './MovieItem.vue';
 
     // Export an object
     export default {
-        data() {
-            return {
-                movies: [
-                    { title: 'Pulp Fiction', genre: genres.CRIME },
-                    { title: 'Home Alone', genre: genres.COMEDY },
-                    { title: 'Asutin Powers', genre: genres.COMEDY }
-                ]
-            }
-        },
-        props: ['genre', 'time'],
+        props: ['genre', 'time', 'movies', 'day'],
         methods: {
             moviePassesGenreFilter(movie) {
                 if(!this.genre.length){
                     return true;
                 } else {
-                    return this.genre.find(genre => movie.genre === genre );
+                    let movieGenres = movie.movie.Genre.split(", ");
+                    let matched = true;
+
+                    this.genre.forEach(genre => {
+                        if(movieGenres.indexOf(genre) === -1) {
+                            matched = false;
+                        }
+                    });
+                    return matched;
                 }
-                
+            },
+            sessionPassesTimeFilter(session) {
+                if(!this.day.isSame(this.$moment(session.time), 'day')) {
+                    return false;
+                } else if(this.time.length === 0 || this.time.length === 2) {
+                    return true;
+                } else if(this.time[0] === times.AFTER_6PM) {
+                    return this.$moment(session.time).hour() >= 18
+                } else {
+                    return this.$moment(session.time).hour() < 18
+                }
             }
         },
         computed: {
             filteredMovies() {
-                return this.movies.filter(this.moviePassesGenreFilter);
+                return this.movies
+                .filter(this.moviePassesGenreFilter)
+                .filter(movie => movie.sessions.find(this.sessionPassesTimeFilter));
+            },
+            noResults() {
+                let times = this.time.join(', ');
+                let genres = this.genre.join(', ');
+                return `No Results for ${times}${ times.length && genres.length ? ', ' : ''} ${genres}.`
             }
+        },
+        components: {
+            MovieItem // Use Single File Component MovieItem.vue
         }
     }
 </script>
