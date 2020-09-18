@@ -1,10 +1,7 @@
 import Vue from 'vue';
 import './style.scss';
-
+import Overview from './components/Overview.vue';
 //import { relativeTimeThreshold } from 'moment';
-
-import MovieList from './components/MovieList.vue';
-import MovieFilter from './components/MovieFilter.vue';
 
 import VueResource from 'vue-resource';
 Vue.use(VueResource);
@@ -13,11 +10,26 @@ import moment from 'moment-timezone'; // root instance ... normaal
 moment.tz.setDefault("UTC");
 Object.defineProperty(Vue.prototype, '$moment', { get() { return this.$root.moment } }); // to componente instance
 
-
-import { checkFilter } from './util/bus';
+import { checkFilter, setDay } from './util/bus';
 const bus = new Vue();
 Object.defineProperty(Vue.prototype, '$bus', { get() { return this.$root.bus} } );
 
+
+import VueRouter from 'vue-router';
+Vue.use(VueRouter);
+
+
+
+
+// VUE Router Config
+import routes from './util/routes';
+const router = new VueRouter({ routes });
+
+
+import Tooltip from './util/tooltip';
+Vue.use(Tooltip);
+
+// VUE Instance
 new Vue({
     el: '#app',
     
@@ -33,8 +45,6 @@ new Vue({
    
     // Custom Vue Components
     components: {
-        MovieList,  // Use Single File Component MovieList.vue
-        MovieFilter // Use Single File Component MovieFilter.vue
     },
 
     // Lifecycle Hook: Created
@@ -44,5 +54,8 @@ new Vue({
             this.movies = response.data; // Fill the movies array
         });
         this.$bus.$on('check-filter', checkFilter.bind(this));
-    }
+        this.$bus.$on('set-day', setDay.bind(this));
+    },
+    router
 });
+
